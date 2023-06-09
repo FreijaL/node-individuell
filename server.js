@@ -39,21 +39,27 @@ app.post('/api/addproduct', async (req, res) => {
 
 app.put('/api/updateproduct', async (req, res) => {
     const { id, whatToUpdate, updateTo } = req.body;
-    const product = req.body;
+    let updateSuccessful = false;
 
     try {
-        if ( whatToUpdate == 'name' ){
+        if ( whatToUpdate === 'name' ){
             await menuDB.update({ _id: id }, { $set: { name: updateTo, modifiedAt: new Date() } });
-        } else if ( whatToUpdate == 'price') {
+            updateSuccessful = true;
+        } else if ( whatToUpdate === 'price') {
             await menuDB.update({ _id: id }, { $set: { price: updateTo, modifiedAt: new Date() } });
-        } else if ( whatToUpdate == 'description' ) {
+            updateSuccessful = true;
+        } else if ( whatToUpdate === 'description' ) {
             await menuDB.update({ _id: id }, { $set: { description: updateTo, modifiedAt: new Date() } });
+            updateSuccessful = true;
         } else {
             res
                 .status(406)
                 .send('Property does not exist, please use name/price/description/id')
         }
-        res.send('Product updated')
+        
+        if ( updateSuccessful) {
+            res.send('Product updated')
+        }
     } catch (error) {
         console.log(error);
         res
@@ -63,16 +69,23 @@ app.put('/api/updateproduct', async (req, res) => {
 });
 
 
-app.delete('/api/delete', async (req, res) => {
-    const productId = req.params.id;
-    await menuDB.remove({ _id: productId }, function (error, removed) {
-        if (error) {
+// fungerar ej att ladda om menyn (har precis testat att ta bort asyns-await)
+app.delete('/api/delete', (req, res) => {
+    const productId = req.body.id;
+    menuDB.remove({ _id: productId}, {}, function (error, removed) {
+        if( error ){
             console.log(error, 'No product found, please try a different id');
+            res.status(500)
+        } else if( removed === 0 ){
+            res
+                .status(409)
+                .send('No product found, please try a different id')
         } else {
-            console.log(removed);
+            res
+                .status(201)
+                .send('Product deleted')
         }
-    });
-    res.send('Product deleted')
+    })
 });
 
 
