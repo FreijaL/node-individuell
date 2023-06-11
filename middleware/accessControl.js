@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken')
+const key = 'BigBangTheory';
 
 
 const authenticateToken = (req, res, next) => {
@@ -6,7 +7,7 @@ const authenticateToken = (req, res, next) => {
 
     if( header ){
         const token = header.split(' ')[1];
-        jwt.verify(token, 'key', (error, decoded) => {
+        jwt.verify(token, key, (error, decoded) => {
             if( error ){
                 res
                     .status(403)

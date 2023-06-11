@@ -13,6 +13,8 @@ const campaignDB = new nedb({filename: 'campaign.db', autoload: true});
 const app = express();
 const port = 6000;
 
+const key = 'BigBangTheory';
+
 app.use( express.json() );
 app.use( cors({ origin: '*' }) );
 
@@ -45,7 +47,9 @@ app.post("/api/signup", async (req, res) => {
   });
 
 
-app.post('/api/login', authenticateToken, checkAdmin, (req, res) => {
+// Jag har försökt i en evighet att hitta felet i denna koden, servern bara står och laddar...
+// ta bort "authenticateToken och checkAdmin" från endpointsen i (add, update, delete, campaign) så ser du att det funkar i alla fall.
+app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     console.log('Login request received')
 
@@ -63,7 +67,7 @@ app.post('/api/login', authenticateToken, checkAdmin, (req, res) => {
                             role: user.role,
                         }
                     };
-                    const token = jwt.sign(payload, 'key', { expiresIn: '1h'});
+                    const token = jwt.sign(payload, key, { expiresIn: '1h'});
                     res.send({ token })
                 } else {
                     res
@@ -72,7 +76,7 @@ app.post('/api/login', authenticateToken, checkAdmin, (req, res) => {
                 }
             });
         }
-    }) ;
+    }) 
 });
 
 
