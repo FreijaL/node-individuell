@@ -1,8 +1,0 @@
-[
-    { "name": "Bryggkaffe", "description": "Bryggd på månadens bönor.", "price": 39 }
-    { "name": "Caffè Doppio", "description": "Bryggd på månadens bönor.", "price": 49 }
-    { "name": "Cappuccino", "description": "Bryggd på månadens bönor.", "price": 49 }
-    { "name": "Latte Macchiato", "description": "Bryggd på månadens bönor.", "price": 49 }
-    { "name": "Kaffe Latte", "description": "Bryggd på månadens bönor.", "price": 54 }
-    { "name": "Cortado", "description": "Bryggd på månadens bönor.", "price": 39 }
-]

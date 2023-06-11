@@ -10,11 +10,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.1.4",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
     "nanoid": "^4.0.2"
   },
   "devDependencies": {
+    "nedb": "^1.8.0",
     "nedb-promise": "^2.0.1"
   }
 }

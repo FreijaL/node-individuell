@@ -1,34 +1,37 @@
-//import { admins } from '../data/admin.db';
-//const fs = require('fs');
-
-//let admins = require('../data/admins.db');
-
-// function getAdmins() {
-//     const rawData = fs.readFileSync('../data/admins.db', 'utf-8');
-//     const admins = JSON.parse(rawData);
-//     return admins;
-// }
-
-// function accessControl(req, res, next){
-//     console.log('Access control');
-
-//     let key = req.query?.key
-//     if( !key ) {
-//         console.log('Access denied, no key!');
-//         res.sendStatus(401)
-//     }
-
-//     let admins = getAdmins();
-//     let found = admins.find(admin => admin.key === key)
-//     if( found ) {
-//         found.requestCount++
-//         console.log(`Access granted. This i request ${found.requestCount}.`);
-//         next();
-//     } else {
-//         console.log('Access denied, bad key!');
-//         res.sendStatus(401);
-//     }
-// };
+const jwt = require('jsonwebtoken')
 
 
-// module.exports = { accessControl };
+const authenticateToken = (req, res, next) => {
+    const header = req.headers.authorization;
+
+    if( header ){
+        const token = header.split(' ')[1];
+        jwt.verify(token, 'key', (error, decoded) => {
+            if( error ){
+                res
+                    .status(403)
+                    .send('Error - forbidden')
+            } else {
+                req.user = decoded.user;
+                next();
+            }
+        })
+    } else {
+        res
+            .status(401)
+            .send('Unauthorized')
+    }
+};
+
+
+const checkAdmin = (req, res, next) => {
+    if( req.user && req.user.role === 'admin'){
+        next()
+    } else {
+        res
+            .status(403)
+            .send('Forbidden')
+    }
+};
+
+module.exports = { authenticateToken, checkAdmin };

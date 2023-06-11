@@ -1,9 +1,14 @@
 const express = require('express');
 const nedb = require('nedb-promise');
 const cors = require('cors');
-const fs = require('fs');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { authenticateToken, checkAdmin } = require('./middleware/accessControl.js')
+
 
 const menuDB = new nedb({filename: 'menu.db', autoload: true});
+const usersDB = new nedb({filename: 'users.db', autoload: true});
+const campaignDB = new nedb({filename: 'campaign.db', autoload: true});
 
 const app = express();
 const port = 6000;
@@ -18,18 +23,77 @@ app.get('/api/menu', async (req, res) => {
 });
 
 
-app.post('/api/addproduct', async (req, res) => {
-    const product = req.body;
-    const existingProduct = await menuDB.findOne({ name: req.body.name });
+app.post("/api/signup", async (req, res) => {
+    const { username, password, role } = req.body;
+  
+    try {
+        const existingUser = await usersDB.findOne({ username });
+  
+        if (existingUser) {
+            return res.status(400).send( "User already exists" );
+        } else {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const newUser = await usersDB.insert({ username, password: hashedPassword, role });
+           
+        res.json(newUser);
+        }
+  
+    } catch (error) {
+      console.error(error);
+      res.status(500).json( 'Internal error');
+    }
+  });
 
-    if( existingProduct ){
+
+app.post('/api/login', authenticateToken, checkAdmin, (req, res) => {
+    const { username, password } = req.body;
+    console.log('Login request received')
+
+    usersDB.findOne({ username }, (err, user) => {
+        if(!user) {
+            res
+                .status(401)
+                .send('username is wrong or does not exist.')
+        } else {
+            bcrypt.compare(password, user.password, (error, result) => {
+                if( result ){
+                    const payload = {
+                        user: {
+                            username: user.username,
+                            role: user.role,
+                        }
+                    };
+                    const token = jwt.sign(payload, 'key', { expiresIn: '1h'});
+                    res.send({ token })
+                } else {
+                    res
+                        .status(401)
+                        .send( 'Wrong password')
+                }
+            });
+        }
+    }) ;
+});
+
+
+app.post('/api/addproduct', authenticateToken, checkAdmin, async (req, res) => {
+    const { id, name, description, price } = req.body;
+    const newProduct = { id, name, description, price};
+    const existingProduct = await menuDB.findOne({ name: newProduct.name });
+    
+
+    if (!name || !description || !price) {
+        res
+            .status(400)
+            .send('Something is missing, make sure you have included [name, description and price]');
+    } else if( existingProduct ){
         res
             .status(409)
-            .send('Product already exist')
+            .send('Product already exist') 
     } else {
-        product.createdAt = new Date()
-        product.modifiedAt = new Date()
-        menuDB.insert(product);
+        newProduct.createdAt = new Date()
+        newProduct.modifiedAt = new Date()
+        menuDB.insert(newProduct);
         res
             .status(201)
             .send('Product added');
@@ -37,7 +101,7 @@ app.post('/api/addproduct', async (req, res) => {
 });
 
 
-app.put('/api/updateproduct', async (req, res) => {
+app.put('/api/updateproduct', authenticateToken, checkAdmin, async (req, res) => {
     const { id, whatToUpdate, updateTo } = req.body;
     let updateSuccessful = false;
 
@@ -70,7 +134,7 @@ app.put('/api/updateproduct', async (req, res) => {
 
 
 // fungerar ej att ladda om menyn (har precis testat att ta bort asyns-await)
-app.delete('/api/delete', (req, res) => {
+app.delete('/api/delete', authenticateToken, checkAdmin, (req, res) => {
     const productId = req.body.id;
     menuDB.remove({ _id: productId}, {}, function (error, removed) {
         if( error ){
@@ -89,12 +153,42 @@ app.delete('/api/delete', (req, res) => {
 });
 
 
+app.post('/api/campaign', (req, res) => {
+    const { products, campaignPrice } = req.body;
 
-// app.get('/api/admin/delete')
-// app.get('/api/admin/create')
-// app.get('/api/admin/update')
+    const invalidProduct = products.filter((product) => {
+        return !menuDB.findOne({ name: product})
+    });
 
+    if (invalidProduct.length > 0){
+        return res
+            .status(400)
+            .send('Product does not exist')
+    }
 
+    if (!Number.isFinite(campaignPrice) || campaignPrice <= 0){
+        return res
+            .status(400)
+            .send('Something went wrong')
+    }
+
+    const newCampaign = {
+        products,
+        campaignPrice
+    };
+
+    campaignDB.insert(newCampaign, (error, campaign) => {
+        if(error){
+            res
+                .status(500)
+                .send('Error')
+        } else {
+            res
+                .status(201)
+                .send(campaign)
+        }
+    })
+});
 
 
 
