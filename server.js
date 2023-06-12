@@ -49,43 +49,43 @@ app.post("/api/signup", async (req, res) => {
       console.error(error);
       res.status(500).json( 'Internal error');
     }
+});
+
+
+app.post('/api/login', async (req, res) => {
+    console.log(req.body);
+    const { username, password } = req.body;
+    console.log('Login request received');
+  
+    try {
+      const user = await usersDB.findOne({ username });
+  
+      if (!user) {
+        res.status(401).send('Username is wrong or does not exist.');
+      } else {
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  
+        if (isPasswordCorrect) {
+          const payload = {
+            user: {
+              username: user.username,
+              role: user.role,
+            },
+          };
+          const token = jwt.sign(payload, key, { expiresIn: '1h' });
+          res.send({ token });
+        } else {
+          res.status(401).send('Wrong password');
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Internal server error');
+    }
   });
 
 
-// Jag har försökt i en evighet att hitta felet i denna koden, servern bara står och laddar... Alize säger att koden ser bra ut?
-// ta bort "authenticateToken och checkAdmin" från endpointsen i (add, update, delete, campaign) så ser du att det funkar i alla fall.
-app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-    console.log('Login request received')
-
-    usersDB.findOne({ username }, (err, user) => {
-        if(!user) {
-            res
-                .status(401)
-                .send('username is wrong or does not exist.')
-        } else {
-            bcrypt.compare(password, user.password, (error, result) => {
-                if( result ){
-                    const payload = {
-                        user: {
-                            username: user.username,
-                            role: user.role,
-                        }
-                    };
-                    const token = jwt.sign(payload, key, { expiresIn: '1h'});
-                    res.send({ token })
-                } else {
-                    res
-                        .status(401)
-                        .send( 'Wrong password')
-                }
-            });
-        }
-    }) 
-});
-
-// authenticateToken, checkAdmin, - - - Ska vara med när koden ovanför funkar
-app.post('/api/addproduct', async (req, res) => {
+app.post('/api/addproduct', authenticateToken, checkAdmin, async (req, res) => {
     const { id, name, description, price } = req.body;
     const newProduct = { id, name, description, price};
     const existingProduct = await menuDB.findOne({ name: newProduct.name });
@@ -109,8 +109,8 @@ app.post('/api/addproduct', async (req, res) => {
     }
 });
 
-// authenticateToken, checkAdmin, - - - Ska vara med när koden ovanför funkar
-app.put('/api/updateproduct', async (req, res) => {
+
+app.put('/api/updateproduct', authenticateToken, checkAdmin, async (req, res) => {
     const { id, whatToUpdate, updateTo } = req.body;
     let updateSuccessful = false;
 
@@ -142,10 +142,10 @@ app.put('/api/updateproduct', async (req, res) => {
 });
 
 
-// authenticateToken, checkAdmin, - - - Ska vara med när koden ovanför funkar
+
 // Efter man tagit bort en produkt kan man inte ladda om menyn av en anledning? Står bara och laddar.
 // Men startar man om servern så ser man på menyn sen att produkten är borttagen
-app.delete('/api/delete', async (req, res) => {
+app.delete('/api/delete', authenticateToken, checkAdmin, async (req, res) => {
     const productId = req.body.id;
     await menuDB.remove({ _id: productId}, {}, function (error, removed) {
         if( error ){
@@ -164,7 +164,7 @@ app.delete('/api/delete', async (req, res) => {
 });
 
 
-app.post('/api/campaign', async (req, res) => {
+app.post('/api/campaign', authenticateToken, checkAdmin, async (req, res) => {
     const { products, campaignPrice } = req.body;
 
     const invalidProduct = await products.filter((product) => {

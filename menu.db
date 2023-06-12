@@ -1,4 +1,5 @@
 {"name":"Matcha","price":45,"description":"Matcha av den bästa matchan","_id":"47TwkmjkH02LFsME"}
+{"name":"Te","description":"Välj från våra många smaker","price":40,"createdAt":{"$$date":1686604521097},"modifiedAt":{"$$date":1686604521097},"_id":"61lXSdSldsI3HOZv"}
 {"name":"Silviakaka","price":25,"description":"Luftig och mumsig","createdAt":{"$$date":1686253935710},"modifiedAt":{"$$date":1686253935710},"_id":"KKUjcAlZdSZH93Tg"}
 {"name":"Cappuccino","price":35,"description":"Bryggd på månadens bönor","createdAt":{"$$date":1686253935710},"modifiedAt":{"$$date":1686253935710},"_id":"RhEctIRCPRVz5rDb"}
 {"name":"Espresso","price":25,"description":"På månadens bönor","createdAt":{"$$date":1686248522565},"_id":"Tb0GgRFjTR2iNPCS"}
@@ -9,5 +10,4 @@
 {"name":"Chai latte","price":49,"description":"Den godaste chai latten","createdAt":{"$$date":1686253935710},"modifiedAt":{"$$date":1686254443342},"_id":"u681AZlneQbeSjli"}
 {"name":"Islatte","description":"Välj från våra många smaker","price":40,"createdAt":{"$$date":1686594045563},"modifiedAt":{"$$date":1686594045563},"_id":"x7vKqdFW1Y6aHB4s"}
 {"name":"Chokladboll","price":35,"description":"Med kaffe i","createdAt":{"$$date":1686253935710},"modifiedAt":{"$$date":1686253935710},"_id":"xnPRZAzFE0FShjdS"}
-{"name":"Te","description":"Välj från våra många smaker","price":40,"createdAt":{"$$date":1686595101189},"modifiedAt":{"$$date":1686595101189},"_id":"2bRe1f0IYoJh5QxV"}
-{"$$deleted":true,"_id":"2bRe1f0IYoJh5QxV"}
+{"$$deleted":true,"_id":"61lXSdSldsI3HOZv"}
