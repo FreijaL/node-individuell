@@ -9,3 +9,5 @@
 {"name":"Chai latte","price":49,"description":"Den godaste chai latten","createdAt":{"$$date":1686253935710},"modifiedAt":{"$$date":1686254443342},"_id":"u681AZlneQbeSjli"}
 {"name":"Islatte","description":"Välj från våra många smaker","price":40,"createdAt":{"$$date":1686594045563},"modifiedAt":{"$$date":1686594045563},"_id":"x7vKqdFW1Y6aHB4s"}
 {"name":"Chokladboll","price":35,"description":"Med kaffe i","createdAt":{"$$date":1686253935710},"modifiedAt":{"$$date":1686253935710},"_id":"xnPRZAzFE0FShjdS"}
+{"name":"Te","description":"Välj från våra många smaker","price":40,"createdAt":{"$$date":1686595101189},"modifiedAt":{"$$date":1686595101189},"_id":"2bRe1f0IYoJh5QxV"}
+{"$$deleted":true,"_id":"2bRe1f0IYoJh5QxV"}
