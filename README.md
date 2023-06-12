@@ -1,5 +1,7 @@
 # Airbean API
 
+http://localhost:6000
+
 ## SEE MENU
 - GET /api/menu
 

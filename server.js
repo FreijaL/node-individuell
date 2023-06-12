@@ -1,7 +1,7 @@
 const express = require('express');
 const nedb = require('nedb-promise');
 const cors = require('cors');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { authenticateToken, checkAdmin } = require('./middleware/accessControl.js')
 
@@ -17,6 +17,11 @@ const key = 'BigBangTheory';
 
 app.use( express.json() );
 app.use( cors({ origin: '*' }) );
+
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`, res.body);
+    next();
+});
 
 
 app.get('/api/menu', async (req, res) => {
@@ -34,8 +39,8 @@ app.post("/api/signup", async (req, res) => {
         if (existingUser) {
             return res.status(400).send( "User already exists" );
         } else {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            const newUser = await usersDB.insert({ username, password: hashedPassword, role });
+            let hashedPassword = await bcrypt.hash(password, 10);
+            let newUser = await usersDB.insert({ username, password: hashedPassword, role });
            
         res.json(newUser);
         }
@@ -47,7 +52,7 @@ app.post("/api/signup", async (req, res) => {
   });
 
 
-// Jag har försökt i en evighet att hitta felet i denna koden, servern bara står och laddar...
+// Jag har försökt i en evighet att hitta felet i denna koden, servern bara står och laddar... Alize säger att koden ser bra ut?
 // ta bort "authenticateToken och checkAdmin" från endpointsen i (add, update, delete, campaign) så ser du att det funkar i alla fall.
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
@@ -79,8 +84,8 @@ app.post('/api/login', (req, res) => {
     }) 
 });
 
-
-app.post('/api/addproduct', authenticateToken, checkAdmin, async (req, res) => {
+// authenticateToken, checkAdmin, - - - Ska vara med när koden ovanför funkar
+app.post('/api/addproduct', async (req, res) => {
     const { id, name, description, price } = req.body;
     const newProduct = { id, name, description, price};
     const existingProduct = await menuDB.findOne({ name: newProduct.name });
@@ -104,8 +109,8 @@ app.post('/api/addproduct', authenticateToken, checkAdmin, async (req, res) => {
     }
 });
 
-
-app.put('/api/updateproduct', authenticateToken, checkAdmin, async (req, res) => {
+// authenticateToken, checkAdmin, - - - Ska vara med när koden ovanför funkar
+app.put('/api/updateproduct', async (req, res) => {
     const { id, whatToUpdate, updateTo } = req.body;
     let updateSuccessful = false;
 
@@ -137,10 +142,12 @@ app.put('/api/updateproduct', authenticateToken, checkAdmin, async (req, res) =>
 });
 
 
-// fungerar ej att ladda om menyn (har precis testat att ta bort asyns-await)
-app.delete('/api/delete', authenticateToken, checkAdmin, (req, res) => {
+// authenticateToken, checkAdmin, - - - Ska vara med när koden ovanför funkar
+// Efter man tagit bort en produkt kan man inte ladda om menyn av en anledning? Står bara och laddar.
+// Men startar man om servern så ser man på menyn sen att produkten är borttagen
+app.delete('/api/delete', async (req, res) => {
     const productId = req.body.id;
-    menuDB.remove({ _id: productId}, {}, function (error, removed) {
+    await menuDB.remove({ _id: productId}, {}, function (error, removed) {
         if( error ){
             console.log(error, 'No product found, please try a different id');
             res.status(500)
@@ -157,10 +164,10 @@ app.delete('/api/delete', authenticateToken, checkAdmin, (req, res) => {
 });
 
 
-app.post('/api/campaign', (req, res) => {
+app.post('/api/campaign', async (req, res) => {
     const { products, campaignPrice } = req.body;
 
-    const invalidProduct = products.filter((product) => {
+    const invalidProduct = await products.filter((product) => {
         return !menuDB.findOne({ name: product})
     });
 
