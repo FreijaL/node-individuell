@@ -11,7 +11,7 @@ http://localhost:6000
 
 ## LOGIN
 - POST /api/login
-- JSON: { "username": " ", "password": " " }
+- JSON: { "username": " ", "password": " uncrypt " }
 - Can check in users.db-file for users or admins to test
 
 ## ADD PRODUCT
